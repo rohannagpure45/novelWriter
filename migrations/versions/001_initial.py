@@ -25,8 +25,8 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_project_id'), 'project', ['id'], unique=False)
@@ -38,7 +38,7 @@ def upgrade() -> None:
         sa.Column('project_id', sa.Integer(), nullable=False),
         sa.Column('version', sa.Integer(), nullable=False, server_default='1'),
         sa.Column('content_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('project_id', 'version', name='uq_style_bible_project_version')
@@ -52,8 +52,8 @@ def upgrade() -> None:
         sa.Column('project_id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('data_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -66,8 +66,8 @@ def upgrade() -> None:
         sa.Column('project_id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('data_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -82,8 +82,8 @@ def upgrade() -> None:
         sa.Column('scene_no', sa.Integer(), nullable=False),
         sa.Column('pov_character_id', sa.Integer(), nullable=True),
         sa.Column('card_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['pov_character_id'], ['character.id'], ondelete='SET NULL'),
         sa.PrimaryKeyConstraint('id'),
@@ -99,7 +99,7 @@ def upgrade() -> None:
         sa.Column('scene_id', sa.Integer(), nullable=False),
         sa.Column('version', sa.Integer(), nullable=False),
         sa.Column('text', sa.Text(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['scene_id'], ['scene.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('scene_id', 'version', name='uq_draft_scene_version')
@@ -113,7 +113,7 @@ def upgrade() -> None:
         sa.Column('project_id', sa.Integer(), nullable=False),
         sa.Column('story_time', sa.String(length=100), nullable=True),
         sa.Column('data_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -130,7 +130,7 @@ def upgrade() -> None:
         sa.Column('predicate', sa.String(length=255), nullable=False),
         sa.Column('object_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('confidence', sa.Float(), nullable=False, server_default='1.0'),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['source_draft_id'], ['draft.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -144,7 +144,7 @@ def upgrade() -> None:
         sa.Column('constraint_type', sa.String(length=50), nullable=False),
         sa.Column('rule_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('severity', sa.String(length=20), nullable=False, server_default='error'),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['project_id'], ['project.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -162,7 +162,7 @@ def upgrade() -> None:
         sa.Column('props_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('valid_from_scene_id', sa.Integer(), nullable=True),
         sa.Column('valid_to_scene_id', sa.Integer(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['valid_from_scene_id'], ['scene.id'], ondelete='SET NULL'),
         sa.ForeignKeyConstraint(['valid_to_scene_id'], ['scene.id'], ondelete='SET NULL'),
         sa.PrimaryKeyConstraint('id')
@@ -178,8 +178,8 @@ def upgrade() -> None:
         sa.Column('scene_id', sa.Integer(), nullable=False),
         sa.Column('iteration_no', sa.Integer(), nullable=False),
         sa.Column('status', sa.String(length=20), nullable=False, server_default='pending'),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['scene_id'], ['scene.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
@@ -194,7 +194,7 @@ def upgrade() -> None:
         sa.Column('check_type', sa.String(length=50), nullable=False),
         sa.Column('passed', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('findings_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['draft_id'], ['draft.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['iteration_id'], ['iteration.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
@@ -211,9 +211,9 @@ def upgrade() -> None:
         sa.Column('input_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('output_jsonb', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('attempts', sa.Integer(), nullable=False, server_default='0'),
-        sa.Column('locked_at', sa.DateTime(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.Column('locked_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['iteration_id'], ['iteration.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )

@@ -25,8 +25,8 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     # Relationships
     style_bibles = relationship("StyleBible", back_populates="project", cascade="all, delete-orphan")
@@ -45,7 +45,7 @@ class StyleBible(Base):
     project_id = Column(Integer, ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     content_jsonb = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="style_bibles")
 
@@ -62,8 +62,8 @@ class Character(Base):
     project_id = Column(Integer, ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     data_jsonb = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="characters")
     pov_scenes = relationship("Scene", back_populates="pov_character")
@@ -77,8 +77,8 @@ class Location(Base):
     project_id = Column(Integer, ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(255), nullable=False)
     data_jsonb = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="locations")
 
@@ -93,8 +93,8 @@ class Scene(Base):
     scene_no = Column(Integer, nullable=False)
     pov_character_id = Column(Integer, ForeignKey("character.id", ondelete="SET NULL"), nullable=True)
     card_jsonb = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="scenes")
     pov_character = relationship("Character", back_populates="pov_scenes")
@@ -118,7 +118,7 @@ class Draft(Base):
     scene_id = Column(Integer, ForeignKey("scene.id", ondelete="CASCADE"), nullable=False)
     version = Column(Integer, nullable=False)
     text = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     scene = relationship("Scene", back_populates="drafts")
     facts = relationship("Fact", back_populates="source_draft", cascade="all, delete-orphan")
@@ -137,7 +137,7 @@ class Event(Base):
     project_id = Column(Integer, ForeignKey("project.id", ondelete="CASCADE"), nullable=False)
     story_time = Column(String(100), nullable=True)  # Flexible story-time representation
     data_jsonb = Column(JSONB, nullable=False, default=dict)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="events")
 
@@ -157,7 +157,7 @@ class Fact(Base):
     predicate = Column(String(255), nullable=False)  # e.g., "has_eye_color", "is_located_in"
     object_jsonb = Column(JSONB, nullable=False, default=dict)
     confidence = Column(Float, nullable=False, default=1.0)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     # Optional: embedding for semantic search (added via migration)
     # embedding = Column(Vector(1536), nullable=True)
 
@@ -173,7 +173,7 @@ class Constraint(Base):
     constraint_type = Column(String(50), nullable=False)  # e.g., "continuity", "style"
     rule_jsonb = Column(JSONB, nullable=False, default=dict)
     severity = Column(String(20), nullable=False, default="error")  # error, warning, info
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     project = relationship("Project", back_populates="constraints")
 
@@ -194,7 +194,7 @@ class EntityLink(Base):
     props_jsonb = Column(JSONB, nullable=False, default=dict)
     valid_from_scene_id = Column(Integer, ForeignKey("scene.id", ondelete="SET NULL"), nullable=True)
     valid_to_scene_id = Column(Integer, ForeignKey("scene.id", ondelete="SET NULL"), nullable=True)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     __table_args__ = (
         Index("ix_entity_link_from", "from_type", "from_id"),
@@ -210,8 +210,8 @@ class Iteration(Base):
     scene_id = Column(Integer, ForeignKey("scene.id", ondelete="CASCADE"), nullable=False)
     iteration_no = Column(Integer, nullable=False)
     status = Column(String(20), nullable=False, default="pending")  # pending, running, passed, failed
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     scene = relationship("Scene", back_populates="iterations")
     check_runs = relationship("CheckRun", back_populates="iteration", cascade="all, delete-orphan")
@@ -228,7 +228,7 @@ class CheckRun(Base):
     check_type = Column(String(50), nullable=False)  # e.g., "continuity", "style"
     passed = Column(Boolean, nullable=False, default=False)
     findings_jsonb = Column(JSONB, nullable=False, default=list)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     iteration = relationship("Iteration", back_populates="check_runs")
     draft = relationship("Draft", back_populates="check_runs")
@@ -245,8 +245,8 @@ class Task(Base):
     input_jsonb = Column(JSONB, nullable=False, default=dict)
     output_jsonb = Column(JSONB, nullable=False, default=dict)
     attempts = Column(Integer, nullable=False, default=0)
-    locked_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=utc_now, nullable=False)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)
+    locked_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     iteration = relationship("Iteration", back_populates="tasks")
