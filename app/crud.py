@@ -293,7 +293,7 @@ def create_task(
     db: Session,
     iteration_id: int,
     task_type: str,
-    input_jsonb: dict = None
+    input_jsonb: Optional[dict] = None
 ) -> models.Task:
     db_task = models.Task(
         iteration_id=iteration_id,
@@ -353,7 +353,7 @@ def create_check_run(
     draft_id: int,
     check_type: str,
     passed: bool,
-    findings_jsonb: list = None
+    findings_jsonb: Optional[list] = None
 ) -> models.CheckRun:
     db_check_run = models.CheckRun(
         iteration_id=iteration_id,

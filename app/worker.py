@@ -3,7 +3,7 @@ RQ Worker for processing pipeline tasks.
 """
 import os
 from redis import Redis
-from rq import Worker, Queue, Connection
+from rq import Worker, Queue
 
 
 def get_redis_connection() -> Redis:
@@ -15,13 +15,11 @@ def get_redis_connection() -> Redis:
 def main():
     """Main worker entry point."""
     redis_conn = get_redis_connection()
-    
-    with Connection(redis_conn):
-        queues = [Queue("novel-engine")]
-        worker = Worker(queues)
-        print("Starting Novel Engine worker...")
-        print(f"Listening on queues: {[q.name for q in queues]}")
-        worker.work()
+    queues = [Queue("novel-engine", connection=redis_conn)]
+    worker = Worker(queues, connection=redis_conn)
+    print("Starting Novel Engine worker...")
+    print(f"Listening on queues: {[q.name for q in queues]}")
+    worker.work()
 
 
 if __name__ == "__main__":

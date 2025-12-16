@@ -8,7 +8,7 @@ State transitions:
 If max_attempts reached without passing checks, transitions to FAILED.
 """
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, Any
 from sqlalchemy.orm import Session
@@ -133,7 +133,7 @@ def process_task(task_id: int) -> dict[str, Any]:
             raise ValueError(f"Task {task_id} not found")
         
         # Lock the task
-        task.locked_at = datetime.utcnow()
+        task.locked_at = datetime.now(timezone.utc)
         task.status = "running"
         task.attempts += 1
         db.commit()
