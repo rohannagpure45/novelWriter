@@ -2,6 +2,8 @@
 FastAPI application for the System-2 Novel Engine.
 """
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -14,6 +16,15 @@ app = FastAPI(
     description="A production-minded MVP for novel writing with relational graph index and iterative drafting pipeline.",
     version="0.1.0"
 )
+
+# Mount Static Files
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    """Serve the single-page application."""
+    with open("app/static/index.html", "r") as f:
+        return f.read()
 
 
 # ============================================================================
