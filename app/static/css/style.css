@@ -73,7 +73,9 @@ button {
     font-weight: 800;
     margin-bottom: 2rem;
     background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+    background-clip: text;
     -webkit-background-clip: text;
+    color: transparent;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.025em;
 }
@@ -97,6 +99,11 @@ nav li {
 nav li:hover, nav li.active {
     background-color: var(--bg-primary);
     color: var(--text-primary);
+}
+
+nav li:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 nav li.active {
@@ -137,6 +144,7 @@ nav li.active {
 
 .card {
     background: var(--bg-card);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
     border-radius: 1rem;
@@ -150,6 +158,14 @@ nav li.active {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
     border-color: var(--accent-color);
+}
+
+.card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-color);
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
 }
 
 .card h3 {
@@ -184,6 +200,11 @@ nav li.active {
     border-color: var(--text-secondary);
 }
 
+.btn:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
 .btn-primary {
     background-color: var(--accent-color);
     color: white;
@@ -192,6 +213,12 @@ nav li.active {
 
 .btn-primary:hover {
     background-color: var(--accent-hover);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
     box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
 }
 
@@ -226,6 +253,10 @@ nav li.active {
     resize: none;
     outline: none;
     font-family: 'Georgia', serif; /* Serif for writing */
+}
+
+.editor-textarea:focus {
+    box-shadow: inset 0 0 0 2px var(--accent-color);
 }
 
 /* Pipeline Status */

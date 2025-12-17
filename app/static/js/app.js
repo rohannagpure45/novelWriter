@@ -14,9 +14,17 @@ const state = {
     currentScene: null
 };
 
-// DOM Elements
-const mainContent = document.getElementById('main-content');
-const modalOverlay = document.getElementById('modal-overlay');
+// DOM Elements (initialized in DOMContentLoaded)
+let mainContent;
+let modalOverlay;
+
+// --- Utilities ---
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
 
 // --- API Client ---
 const api = {
@@ -63,6 +71,7 @@ function loadDashboardView() {
         </div>
     `;
     loadProjects();
+    updateSidebar('dashboard');
 }
 
 async function loadProjects() {
@@ -77,9 +86,9 @@ async function loadProjects() {
         }
 
         grid.innerHTML = projects.map(p => `
-            <div class="card" onclick="openProject(${p.id})">
-                <h3>${p.name}</h3>
-                <p>${p.description || 'No description'}</p>
+            <div class="card" tabindex="0" role="button" onclick="openProject(${p.id})" onkeydown="if(event.key==='Enter'||event.key===' '){openProject(${p.id});event.preventDefault();}">
+                <h3>${escapeHtml(p.name)}</h3>
+                <p>${escapeHtml(p.description) || 'No description'}</p>
                 <div class="flex justify-between items-center" style="margin-top: 1rem;">
                     <span class="text-sm text-secondary">ID: ${p.id}</span>
                 </div>
@@ -92,12 +101,17 @@ async function loadProjects() {
 }
 
 async function openProject(id) {
-    state.currentProject = state.projects.find(p => p.id === id);
-    if (!state.currentProject) {
-        // Fetch strictly if not in memory
-        state.currentProject = await api.get(`/projects/${id}`);
+    try {
+        state.currentProject = state.projects.find(p => p.id === id);
+        if (!state.currentProject) {
+            // Fetch strictly if not in memory
+            state.currentProject = await api.get(`/projects/${id}`);
+        }
+        renderProjectView();
+    } catch (err) {
+        console.error(err);
+        alert('Failed to open project');
     }
-    renderProjectView();
 }
 
 function renderProjectView() {
@@ -106,8 +120,8 @@ function renderProjectView() {
         <div class="view-header">
             <div>
                 <button class="btn text-sm" onclick="renderDashboard()">← Back</button>
-                <h2 class="view-title" style="margin-top: 0.5rem;">${p.name}</h2>
-                <p class="text-secondary">${p.description || ''}</p>
+                <h2 class="view-title" style="margin-top: 0.5rem;">${escapeHtml(p.name)}</h2>
+                <p class="text-secondary">${escapeHtml(p.description) || ''}</p>
             </div>
             <div class="flex gap-2">
                  <button class="btn" onclick="showCreateCharacterModal()">+ Character</button>
@@ -142,7 +156,7 @@ async function loadProjectDetails(projectId) {
     state.characters = chars;
     document.getElementById('character-list').innerHTML = chars.map(c => `
         <div class="card" style="padding: 1rem;">
-            <strong>${c.name}</strong>
+            <strong>${escapeHtml(c.name)}</strong>
             <p class="text-sm text-secondary">ID: ${c.id}</p>
         </div>
     `).join('');
@@ -153,9 +167,9 @@ async function loadProjectDetails(projectId) {
     document.getElementById('scene-list').innerHTML = scenes.map(s => {
         const title = (s.card_jsonb && s.card_jsonb.title) ? s.card_jsonb.title : `Scene ${s.scene_no}`;
         return `
-        <div class="card" onclick="openScene(${s.id})">
+        <div class="card" tabindex="0" role="button" onclick="openScene(${s.id})" onkeydown="if(event.key==='Enter'||event.key===' '){openScene(${s.id});event.preventDefault();}">
             <div class="flex justify-between">
-                <strong>${title}</strong>
+                <strong>${escapeHtml(title)}</strong>
                 <span class="text-sm text-secondary">Ch ${s.chapter_no} / Sc ${s.scene_no}</span>
             </div>
         </div>
@@ -182,7 +196,7 @@ async function openScene(sceneId) {
         <div class="view-header">
             <div>
                  <button class="btn text-sm" onclick="renderProjectView()">← Project</button>
-                 <h2 class="view-title" style="margin-top:0.5rem;">${title}</h2>
+                 <h2 class="view-title" style="margin-top:0.5rem;">${escapeHtml(title)}</h2>
             </div>
             <div class="flex gap-2">
                 <button class="btn" onclick="runPipeline(${sceneId})">✨ Run Pipeline</button>
@@ -195,9 +209,12 @@ async function openScene(sceneId) {
                 <span class="text-sm text-secondary">Ch ${scene.chapter_no} / Sc ${scene.scene_no}</span>
                 <span class="text-sm text-secondary">Words: <span id="word-count">0</span></span>
             </div>
-            <textarea id="scene-editor" class="editor-textarea" placeholder="Start writing...">${content}</textarea>
+            <textarea id="scene-editor" class="editor-textarea" placeholder="Start writing..."></textarea>
         </div>
     `;
+
+    // Set content via .value to prevent XSS
+    document.getElementById('scene-editor').value = content;
 
     document.getElementById('scene-editor').addEventListener('input', (e) => {
         const text = e.target.value;
@@ -212,7 +229,7 @@ async function saveDraft(sceneId) {
     const content = document.getElementById('scene-editor').value;
     try {
         await api.post(`/scenes/${sceneId}/drafts`, {
-            content: content,
+            text: content,
             version_notes: "Manual save from web UI"
         });
         alert('Draft saved!');
@@ -260,6 +277,32 @@ async function createProject() {
         await api.post('/projects', { name: title, description });
         hideModal();
         loadProjects();
+    } catch (e) { alert(e.message); }
+}
+
+function showCreateCharacterModal() {
+    if (!state.currentProject) return;
+    showModal(`
+        <h3 class="text-lg font-bold" style="margin-bottom:1rem;">New Character</h3>
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="new-char-name">
+        </div>
+        <div class="flex justify-between">
+            <button class="btn" onclick="hideModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="createCharacter()">Create</button>
+        </div>
+    `);
+}
+
+async function createCharacter() {
+    const name = document.getElementById('new-char-name').value.trim();
+    if (!name) return alert('Name required');
+
+    try {
+        await api.post(`/projects/${state.currentProject.id}/characters`, { name, data_jsonb: {} });
+        hideModal();
+        loadProjectDetails(state.currentProject.id);
     } catch (e) { alert(e.message); }
 }
 
@@ -366,6 +409,10 @@ function updateSidebar(activeItem) {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize DOM elements
+    mainContent = document.getElementById('main-content');
+    modalOverlay = document.getElementById('modal-overlay');
+
     // Basic router logic
     loadDashboardView();
 
@@ -374,8 +421,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.createProject = createProject;
     window.hideModal = hideModal;
     window.openProject = openProject;
-    window.renderDashboard = () => { loadDashboardView(); updateSidebar('dashboard'); };
+    window.renderDashboard = loadDashboardView;
     window.renderProjectView = renderProjectView;
+    window.showCreateCharacterModal = showCreateCharacterModal;
+    window.createCharacter = createCharacter;
     window.showCreateSceneModal = showCreateSceneModal;
     window.createScene = createScene;
     window.openScene = openScene;
