@@ -52,7 +52,7 @@ const api = {
 
 // --- Views ---
 
-function renderDashboard() {
+function loadDashboardView() {
     mainContent.innerHTML = `
         <div class="view-header">
             <h2 class="view-title">Projects</h2>
@@ -367,14 +367,14 @@ function updateSidebar(activeItem) {
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     // Basic router logic
-    renderDashboard();
+    loadDashboardView();
 
     // Expose functions globally for HTML event handlers
     window.showCreateProjectModal = showCreateProjectModal;
     window.createProject = createProject;
     window.hideModal = hideModal;
     window.openProject = openProject;
-    window.renderDashboard = () => { renderDashboard(); updateSidebar('dashboard'); };
+    window.renderDashboard = () => { loadDashboardView(); updateSidebar('dashboard'); };
     window.renderProjectView = renderProjectView;
     window.showCreateSceneModal = showCreateSceneModal;
     window.createScene = createScene;
