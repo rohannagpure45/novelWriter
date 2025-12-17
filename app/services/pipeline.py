@@ -62,17 +62,21 @@ def get_task_queue() -> Queue:
 def start_iteration(
     db: Session,
     scene_id: int,
-    max_attempts: int = 3
+    max_attempts: int = 3,
+    draft_id: Optional[int] = None
 ) -> models.Iteration:
     """
     Start a new pipeline iteration for a scene.
     
-    Creates the iteration and enqueues the first task (PLAN_SCENE).
+    Creates the iteration and enqueues the first task.
+    If draft_id provided, starts at EXTRACT_FACTS (Analysis Mode).
+    Else, starts at PLAN_SCENE (Generation Mode).
     
     Args:
         db: Database session.
         scene_id: ID of the scene to process.
         max_attempts: Maximum revision attempts before failing.
+        draft_id: Optional draft to analyze.
         
     Returns:
         The created Iteration.
@@ -85,16 +89,29 @@ def start_iteration(
     # Create iteration
     iteration = crud.create_iteration(db, scene_id)
     
-    # Create first task
-    first_task = crud.create_task(
-        db,
-        iteration_id=iteration.id,
-        task_type=TaskType.PLAN_SCENE.value,
-        input_jsonb={
+    # Determine start task
+    if draft_id:
+        task_type = TaskType.EXTRACT_FACTS.value
+        initial_input = {
+            "scene_id": scene_id,
+            "draft_id": draft_id,
+            "max_attempts": max_attempts,
+            "current_attempt": 0
+        }
+    else:
+        task_type = TaskType.PLAN_SCENE.value
+        initial_input = {
             "scene_id": scene_id,
             "max_attempts": max_attempts,
             "current_attempt": 0
         }
+    
+    # Create first task
+    first_task = crud.create_task(
+        db,
+        iteration_id=iteration.id,
+        task_type=task_type,
+        input_jsonb=initial_input
     )
     
     # Update iteration status

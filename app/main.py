@@ -272,11 +272,20 @@ def run_pipeline(
     if not scene:
         raise HTTPException(status_code=404, detail="Scene not found")
     
+    # Validate draft_id if provided
+    if request.draft_id:
+        draft = crud.get_draft(db, request.draft_id)
+        if not draft:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        if draft.scene_id != scene_id:
+            raise HTTPException(status_code=400, detail="Draft does not belong to this scene")
+    
     try:
         iteration = pipeline.start_iteration(
             db,
             scene_id=scene_id,
-            max_attempts=request.max_attempts
+            max_attempts=request.max_attempts,
+            draft_id=request.draft_id
         )
         
         return schemas.PipelineRunResponse(

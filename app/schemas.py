@@ -306,6 +306,7 @@ class IterationRead(BaseModel):
 
 class PipelineRunRequest(BaseModel):
     max_attempts: int = 3
+    draft_id: Optional[int] = None
 
 
 class PipelineRunResponse(BaseModel):

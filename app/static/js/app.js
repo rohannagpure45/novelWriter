@@ -225,23 +225,38 @@ async function openScene(sceneId) {
 
 // --- Actions ---
 
-async function saveDraft(sceneId) {
+async function saveDraft(sceneId, showToast = true) {
     const content = document.getElementById('scene-editor').value;
     try {
-        await api.post(`/scenes/${sceneId}/drafts`, {
+        const draft = await api.post(`/scenes/${sceneId}/drafts`, {
             text: content,
             version_notes: "Manual save from web UI"
         });
-        alert('Draft saved!');
+        if (showToast) alert('Draft saved!');
+        return draft; // Return the saved draft object
     } catch (e) {
-        alert('Error saving draft: ' + e.message);
+        if (showToast) alert('Error saving draft: ' + (e && e.message ? e.message : e));
+        throw e;
     }
 }
 
 async function runPipeline(sceneId) {
-    if (!confirm('Start pipeline iteration? this will analyze the current draft.')) return;
+    if (!confirm('Start pipeline iteration? This will analyze the CURRENT draft content.')) return;
+
+    // Auto-save first to ensure we analyze what's on screen
+    let draftId = null;
     try {
-        await api.post(`/pipeline/scenes/${sceneId}/run`, { max_attempts: 3 });
+        const draft = await saveDraft(sceneId, false); // false = silent save
+        draftId = draft.id;
+    } catch (e) {
+        return; // Stop if save failed
+    }
+
+    try {
+        await api.post(`/pipeline/scenes/${sceneId}/run`, {
+            max_attempts: 3,
+            draft_id: draftId
+        });
         alert('Pipeline started! Check console/worker for progress.');
     } catch (e) {
         alert('Error: ' + e.message);
